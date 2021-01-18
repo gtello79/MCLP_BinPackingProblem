@@ -23,15 +23,20 @@ A grandes rasgos el algoritmo hace los siguiente:
     * La solución necesitaba ser ajustada, borraba un conjunto completo de cajas (esencialmente el que sería el bin a eliminar), fue verificado y arreglado.
 
 - Calcular el volumen de los bins (Porcentaje de llenado)
+    * Aqui necesitamos saber el % de llenado de cada bin, por ende, sera necesario guardar la respuesta del bsg.(id_bin + %llenado)    
+    * Done
 
 - Generar alguna gráfica que pueda ser util para analizar el cambio del volumen.
-    
-- Graficar los bins (codigo en Matlab) (Pendiente, Profe Ignacio elaborará el generador de posiciones)
+    * Listo
+
 - Modularizar el código que funciona correctamente
+
 - Corres pruebas con distintas características
     * idClass = 1, boxSize = 200, id_Instance = 0 : No ocurren cambios hasta el momento
 
 - Ajustar el iterador de persistencia (en Reduce bins) para que sea coherente a la cantidad de cajas que se tiene por cada bin, es decir, un valor que me permita reintentar ingresar la caja.
+
+- Graficar los bins (codigo en Matlab) (Pendiente, Profe Ignacio elaborará el generador de posiciones)
 
 ## Reunión 05-01-2021
 - 
