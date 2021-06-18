@@ -1,7 +1,8 @@
 class bin:
-    def __init__(self, boxes):
+    def __init__(self, id, boxes, utilization):
+        self.id = id
         self.boxes = boxes
-        self.
+        self.utilization = utilization
 
     def getMostComplex(self):
         idBox = None

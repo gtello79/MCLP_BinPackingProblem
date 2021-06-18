@@ -8,6 +8,7 @@ class box:
     def __init__(self, id, l, w, h, rotx, roty, rotz):
         self.id = id
         self.l = l; self.w = w; self.h = h;
+        self.vol = l*w*h
         self.rotx = rotx; self.roty = roty; self.rotz = rotz;
     
     def calculateComplex(self):
