@@ -38,5 +38,4 @@ A grandes rasgos el algoritmo hace los siguiente:
 
 - Graficar los bins (codigo en Matlab) (Pendiente, Profe Ignacio elaborará el generador de posiciones)
 
-## Reunión 05-01-2021
-- 
+

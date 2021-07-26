@@ -1,0 +1,21 @@
+* Comparando la solucion obtenida por bpp, evaluar que sucede cuando retorna None
+ 
+ return None -> No se pudo realizar el movimiento
+ return !None -> Si se pudo mover
+
+* Revisar las cajas y los movimientos
+
+* Evaluar solo el par de bins swapped
+
+* Llenado de bin resultantes
+
+* volumen ocupado (estudio) - contrastaar con la probabilidad
+La probabilidad nos está dando valor 0 -> todos los bins nos están dando con un valor mayor a la metrica propuesta.
+Por lo tanto, replantear la metrica propuesta que es:
+Volumen(bin_selecto)/Vcontainer
+
+
+* Evaluar funcion objetivo con respecto a los swap y el sentido. Probar mas iiteraciones
+* Evaluar la diversidad de los bins.
+* Evaluar el cambio del bin que gano cajas vs el que perdio cajas
+* Evaluar la funcion objetivo cuando se elimina un bin.  

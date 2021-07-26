@@ -1,8 +1,12 @@
+from numpy.lib.function_base import _calculate_shapes
+
+
 class bin:
     def __init__(self, id, boxes, utilization):
         self.id = id
         self.boxes = boxes
         self.utilization = utilization
+
 
     def getMostComplex(self):
         idBox = None
@@ -26,3 +30,9 @@ class bin:
     def getAllIndex(self):
         idBoxes = [ b.idBox for b in self.boxes ]
         return idBoxes
+
+    def __str__ (self) -> str:
+        boxes_list = ''
+        for box in self.boxes.keys():
+            boxes_list = boxes_list + str([box.id, self.boxes[box]]) + ", "
+        return boxes_list
