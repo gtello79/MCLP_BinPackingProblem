@@ -6,6 +6,7 @@ class bin:
         self.id = id
         self.boxes = boxes
         self.utilization = utilization
+        self.verify = True
 
 
     def getMostComplex(self):

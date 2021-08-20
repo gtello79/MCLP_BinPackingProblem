@@ -19,3 +19,20 @@ Volumen(bin_selecto)/Vcontainer
 * Evaluar la diversidad de los bins.
 * Evaluar el cambio del bin que gano cajas vs el que perdio cajas
 * Evaluar la funcion objetivo cuando se elimina un bin.  
+
+* 27 / 07 / 2021 
+
+ - Evaluar unicamente los bins cambiados 
+ - A partir de la variable "verify" mejorar el primer punto.
+ - Incluir "utilization" de BSG para estudios futuros.
+ - Verificacion de BSG y porque pudo no ser aceptado.
+ - Imprimir solo cuando el swap es aceptado en su valor de funcion de evaluacion (antes, dps y el BSG + funcion de evaluacion)
+
+ * 05 / 08 / 2021
+ 
+ - Crear tabla de resultados donde se incluya la ejecucion - swappings realizados - swapping no aceptados - valor de la varianza para la mejor solucion - tiempo
+ - Mejora de los movimientos (hay más swappings aceptados), y llamadas a BSG.
+ - Anotar informacion de las cajas utilizadas en el swapping, no es necesario que mostremos nuevamente las cajas no utilizadas desde los bins.
+ - La funcion de evaluacion ahora solo debe continuar el valor de su varianza, sino será un valor muy alto y costoso para cuando sean más bins 
+ - Verificar valores de los volumenes al momento de realizar el swap (antes y dps)
+ - Imprimir probabilidad 
