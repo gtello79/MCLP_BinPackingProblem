@@ -1,3 +1,0 @@
-tmp_instance_*
-base/.ipynb_checkpoints/*
-base/__pycache__/*
