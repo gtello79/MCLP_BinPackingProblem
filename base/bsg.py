@@ -48,7 +48,7 @@ def bsg_solve(ssh,L,W,H,boxes,id2box, time=1, verbose=False):
 
     stdin, stdout, stderr = ssh.exec_command("/home/iaraya/clp/BSG_CLP /home/iaraya/clp/"+filename+" -i 0 -t "+str(time)+" --json")
     lines = stdout.readlines()
-    print(lines[-1])
+    #print(lines[-1])
     json_data = json.loads(lines[-1])
     loaded={}; remaining={}
     for item in json_data["loaded"]:
