@@ -99,6 +99,7 @@ def get_media_volumen(solution:list) -> float:
     media = float(ponderate/size)
     return media    
 
+import random
 def get_random_bin(s:list, b:bin = None) -> object:
     
     get_id = int(random.randint(0, len(s)-1))
@@ -152,18 +153,18 @@ def verify_solution(ssh, solution: list, id2box, bsg_time=5) -> bool:
     factibility = True
     for s in solution:
         if(not(s.verify)):
-            s.verify = True
             boxes = s.boxes
             persistens = True
             while(persistens):
                 try:
-                    remaining, loaded, utilization = bsg_solve(ssh,L,W,H, boxes, id2box, time=bsg_time)
+                    remaining, loaded, s.utilization = bsg_solve(ssh,L,W,H, boxes, id2box, time=bsg_time)
                     persistens = False
                 except:
                     persistens = True
 
             if(len(remaining) != 0):
                 return False
+            else: s.verify = True
                 
     return factibility
 

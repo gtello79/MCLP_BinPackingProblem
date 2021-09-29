@@ -1,4 +1,5 @@
 from numpy.lib.function_base import _calculate_shapes
+import random
 
 
 class bin:
@@ -7,6 +8,47 @@ class bin:
         self.boxes = boxes
         self.utilization = utilization
         self.verify = True
+        
+    def set_adj_vol(self, adj_vol):
+        self.adj_vol = adj_vol
+        
+    def insert_boxes(self, boxes):
+        for box in boxes:
+            if box not in self.boxes:
+                self.boxes[box] = boxes[box]
+            else:
+                self.boxes[box] = self.boxes[box] + boxes[box]
+            self.adj_vol += box.adj_vol*boxes[box]
+        self.verify = False   
+        
+    
+    def pop_random_boxes(self, n):
+        boxes_to_share = dict()
+        boxes = self.boxes
+
+        for i in range(n):
+            total_keys = list(boxes.keys())
+
+            #Selecciona una caja aleatoria
+            get_id = int(random.randint(0, len(total_keys)-1))
+            box = total_keys[get_id]
+            boxes[box] = boxes[box]-1
+            self.adj_vol -= box.adj_vol
+
+            # Agrega la caja al conjunto
+            if(box not in boxes_to_share):
+                boxes_to_share[box] = 1
+            else:
+                boxes_to_share[box] = boxes_to_share[box]+1
+
+            # Elimina la caja del conjunto si no quedan mas
+            if(boxes[box] == 0):
+                boxes.pop(box)
+
+            if(len(boxes) == 0):
+                break
+
+        return boxes_to_share
 
 
     def getMostComplex(self):
