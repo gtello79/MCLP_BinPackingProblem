@@ -8,7 +8,7 @@ from bin import bin
 
 Vmax = None; L=None; W=None; H=None
 
-def generate_candidate_solution(ssh,_L,_W,_H, boxes, id2box,r_param = 1.0, bsg_time=1) -> list:
+def generate_candidate_solution(ssh,_L,_W,_H, boxes, id2box,r_param = 1.0, bsg_time=1, extra_args="--greedy_only --min_fr=0.98") -> list:
     global Vmax,L,W,H
     L=_L; W=_W; H=_H
     
@@ -45,7 +45,7 @@ def generate_candidate_solution(ssh,_L,_W,_H, boxes, id2box,r_param = 1.0, bsg_t
             vol_c = vol_c + vol_box*n
 
         #Evaluar contenedor cajas obtenidas 
-        remaining, loaded, utilization = bsg_solve(ssh,L,W,H, c , id2box, time=bsg_time)
+        remaining, loaded, utilization = bsg_solve(ssh,L,W,H, c , id2box, time=bsg_time, args=extra_args)
         container = bin(solution_size, loaded, utilization)
         #Se agrega la solucion
         solution = np.append(solution, container)
@@ -149,7 +149,7 @@ def eval_list_bins(solution:list, media) -> float:
 
     return quality
 
-def verify_solution(ssh, solution: list, id2box, bsg_time=5) -> bool:
+def verify_solution(ssh, solution: list, id2box, bsg_time=5, args="") -> bool:
     factibility = True
     for s in solution:
         if(not(s.verify)):
@@ -157,7 +157,7 @@ def verify_solution(ssh, solution: list, id2box, bsg_time=5) -> bool:
             persistens = True
             while(persistens):
                 try:
-                    remaining, loaded, s.utilization = bsg_solve(ssh,L,W,H, boxes, id2box, time=bsg_time)
+                    remaining, loaded, s.utilization = bsg_solve(ssh,L,W,H, boxes, id2box, time=bsg_time, args=args)
                     persistens = False
                 except:
                     persistens = True

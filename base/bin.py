@@ -8,9 +8,13 @@ class bin:
         self.boxes = boxes
         self.utilization = utilization
         self.verify = True
+        self.vol=0.0
         
     def set_adj_vol(self, adj_vol):
         self.adj_vol = adj_vol
+        
+    def set_vol(self, vol):
+        self.vol = vol
         
     def insert_boxes(self, boxes):
         for box in boxes:
@@ -19,6 +23,7 @@ class bin:
             else:
                 self.boxes[box] = self.boxes[box] + boxes[box]
             self.adj_vol += box.adj_vol*boxes[box]
+            self.vol += box.vol*boxes[box]
         self.verify = False   
         
     
@@ -34,6 +39,7 @@ class bin:
             box = total_keys[get_id]
             boxes[box] = boxes[box]-1
             self.adj_vol -= box.adj_vol
+            self.vol -= box.vol
 
             # Agrega la caja al conjunto
             if(box not in boxes_to_share):
