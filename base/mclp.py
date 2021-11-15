@@ -149,7 +149,7 @@ def eval_list_bins(solution:list, media) -> float:
 
     return quality
 
-def verify_solution(ssh, solution: list, id2box, bsg_time=5, args="") -> bool:
+def verify_solution(ssh, solution: list, id2box, bsg_time=5, args="", verbose=False) -> bool:
     factibility = True
     for s in solution:
         if(not(s.verify)):
@@ -157,7 +157,7 @@ def verify_solution(ssh, solution: list, id2box, bsg_time=5, args="") -> bool:
             persistens = True
             while(persistens):
                 try:
-                    remaining, loaded, s.utilization = bsg_solve(ssh,L,W,H, boxes, id2box, time=bsg_time, args=args)
+                    remaining, loaded, s.utilization = bsg_solve(ssh,L,W,H, boxes, id2box, time=bsg_time, args=args, verbose=verbose)
                     persistens = False
                 except:
                     persistens = True
