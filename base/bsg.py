@@ -160,6 +160,6 @@ def bsg_solve(ssh,L,W,H,boxes,id2box, time=1, args="", verbose=False, remove_ins
     for item in json_data["remaining"]:
         remaining[id2box[item[0]]]=item[1]
         
-    #ssh.exec_command("rm /home/iaraya/clp/"+filename)
+    ssh.exec_command("rm /home/iaraya/clp/"+filename)
     
     return remaining, loaded, json_data["utilization"]
