@@ -162,4 +162,4 @@ def bsg_solve(ssh,L,W,H,boxes,id2box, time=1, args="", verbose=False, remove_ins
         
     ssh.exec_command("rm /home/iaraya/clp/"+filename)
     
-    return remaining, loaded, json_data["utilization"], json_data["tot_support"], json_data["full_supported_items"]
+    return remaining, loaded, json_data #json_data["utilization"], json_data["tot_support"], json_data["full_supported_items"]

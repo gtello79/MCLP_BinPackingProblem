@@ -3,12 +3,13 @@ import random
 
 
 class bin:
-    def __init__(self, id, boxes, utilization):
+    def __init__(self, id, boxes, utilization, layout=None):
         self.id = id
         self.boxes = boxes
         self.utilization = utilization
         self.verify = True
         self.vol=0.0
+        self.layout = layout 
         
     def set_adj_vol(self, adj_vol):
         self.adj_vol = adj_vol
