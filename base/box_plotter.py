@@ -2,6 +2,7 @@ from plotly.offline import init_notebook_mode, iplot
 import plotly.graph_objs as go
 from random import random
 from typing import Tuple
+import numpy as np
 
 
 class Box:
@@ -14,16 +15,9 @@ class Box:
     j: float
     k: float
         
-    def __init__(self, text_dimensions: str):
-        text_dimensions = text_dimensions.replace("(", "")
-        text_dimensions = text_dimensions.replace(")", "")
-        dim = text_dimensions.strip().split(",")
-        dim = [[float(dim[0]), float(dim[1]), float(dim[2])],
-               [float(dim[3]), float(dim[4]), float(dim[5])]]
-        
-        self.init(dim)
-    
+  
     def __init__(self, dim):
+        dim = np.array(dim)
         dim.shape = (2,3)
         self.init(dim)
 
@@ -84,6 +78,8 @@ def save_container(cont_dim, box_dims, filename):
         yaxis_showspikes=False,
         ),
     )
+
+    
 
     # Renderizando grafico
     fig.write_image(filename)
