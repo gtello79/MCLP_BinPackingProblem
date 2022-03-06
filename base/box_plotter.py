@@ -63,10 +63,13 @@ def save_container(cont_dim, box_dims, filename):
     # Configurando layout del grafico
     layout = go.Layout(
             margin=dict(
-                l=0,
-                r=0,
-                b=0,
-                t=0))
+            l=50,
+            r=50,
+            b=100,
+            t=100,
+            pad=4
+          )
+        )
     fig = go.Figure(data=data, layout=layout)
 
     # Configurando grafico
@@ -77,13 +80,7 @@ def save_container(cont_dim, box_dims, filename):
             zaxis=dict(nticks=14, range=[0, cont_dim[2]], ),
             xaxis_showspikes=False,
             yaxis_showspikes=False),
-        margin=dict(
-            l=50,
-            r=50,
-            b=100,
-            t=100,
-            pad=4
-        )
+        
     )
 
     
