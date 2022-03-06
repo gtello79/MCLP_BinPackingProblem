@@ -71,9 +71,9 @@ def save_container(cont_dim, box_dims, filename):
 
     # Configurando grafico
     fig.update_layout(scene=dict(
-        xaxis=dict(nticks=14, range=[0, cont_dim[0]], ),
-        yaxis=dict(nticks=14, range=[0, cont_dim[1]], ),
-        zaxis=dict(nticks=14, range=[0, cont_dim[2]], ),
+        xaxis=dict(nticks=14, range=[0, cont_dim[0]+100], ),
+        yaxis=dict(nticks=14, range=[0, cont_dim[1]+100], ),
+        zaxis=dict(nticks=14, range=[0, cont_dim[2]+100], ),
         xaxis_showspikes=False,
         yaxis_showspikes=False,
         ),
