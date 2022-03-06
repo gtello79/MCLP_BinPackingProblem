@@ -62,26 +62,27 @@ def save_container(cont_dim, box_dims, filename):
 
     # Configurando layout del grafico
     layout = go.Layout(
+            autosize=False,
             margin=dict(
-                l=0,
-                r=0,
-                b=0,
-                t=0))
+                l=10,
+                r=10,
+                b=10,
+                t=10))
     fig = go.Figure(data=data, layout=layout)
 
     # Configurando grafico
     fig.update_layout(
         scene=dict(
-            xaxis=dict(nticks=14, range=[0, cont_dim[0]*10], ),
-            yaxis=dict(nticks=14, range=[0, cont_dim[1]*10], ),
-            zaxis=dict(nticks=14, range=[0, cont_dim[2]*10], ),
+            xaxis=dict(nticks=14, range=[0, cont_dim[0]], ),
+            yaxis=dict(nticks=14, range=[0, cont_dim[2]], ),
+            zaxis=dict(nticks=14, range=[0, cont_dim[1]], ),
             xaxis_showspikes=False,
-            yaxis_showspikes=False),
+            yaxis_showspikes=False
+        ),
 
     )
 
     
-    print("OAJSOAJSOAJSOJA")
     # Renderizando grafico
     fig.write_image(filename)
     #iplot(fig, filename="holo")
