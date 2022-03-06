@@ -53,27 +53,36 @@ def save_container(cont_dim, box_dims, filename):
 
     data = []
     for box in boxes:
-        tracel = go.Mesh3d(x=box.x, y=box.y, z=box.z, i=box.i,
-                               j=box.j, k=box.k, opacity=1,
-                               color='rgb({},{},{})'.format(random()*255,
-                                                            random()*255,
-                                                            random()*255))
+        tracel = go.Mesh3d(
+                  x=box.x, 
+                  y=box.y, 
+                  z=box.z, 
+                  i=box.i,
+                  j=box.j, 
+                  k=box.k, 
+                  opacity=1,
+                  color='rgb({},{},{})'.format(
+                      random()*255,
+                      random()*255,
+                      random()*255
+                  )
+              )
         data.append(tracel)
 
     # Configurando layout del grafico
     layout = go.Layout(
             autosize=False,
             margin=dict(
-                l=10,
-                r=10,
-                b=10,
-                t=10))
+                l=0,
+                r=0,
+                b=0,
+                t=0)
+            )
+
     fig = go.Figure(data=data, layout=layout)
 
     # Configurando grafico
     fig.update_layout(
-        width = 800,
-        height = 800,
         scene=dict(
             xaxis=dict(nticks=14, range=[0, cont_dim[0]], ),
             yaxis=dict(nticks=14, range=[0, cont_dim[1]], ),
