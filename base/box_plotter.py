@@ -72,17 +72,17 @@ def save_container(cont_dim, box_dims, filename):
 
     # Configurando grafico
     fig.update_layout(
+        width = 800,
+        height = 800,
         scene=dict(
             xaxis=dict(nticks=14, range=[0, cont_dim[0]], ),
-            yaxis=dict(nticks=14, range=[0, cont_dim[2]], ),
-            zaxis=dict(nticks=14, range=[0, cont_dim[1]], ),
+            yaxis=dict(nticks=14, range=[0, cont_dim[1]], ),
+            zaxis=dict(nticks=14, range=[0, cont_dim[2]], ),
             xaxis_showspikes=False,
-            yaxis_showspikes=False
+            yaxis_showspikes=False,
         ),
-
     )
 
-    
     # Renderizando grafico
     fig.write_image(filename)
     #iplot(fig, filename="holo")
