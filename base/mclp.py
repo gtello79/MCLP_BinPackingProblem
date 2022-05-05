@@ -9,7 +9,6 @@ from bin import bin
 Vmax = None; L=None; W=None; H=None
 
 def generate_candidate_solution(ssh,_L,_W,_H, boxes, id2box,r_param = 1.0, bsg_time=1, extra_args="--greedy_only --min_fr=0.98") -> list:
-    global Vmax,L,W,H
     L=_L; W=_W; H=_H
     
     Vmax = L*W*H
@@ -154,14 +153,7 @@ def verify_solution(ssh, solution: list, id2box, bsg_time=5, args="", verbose=Fa
     for s in solution:
         if(not(s.verify)):
             boxes = s.boxes
-            persistens = True
-            while(persistens):
-                try:
-                    remaining, loaded, s.utilization = bsg_solve(ssh,L,W,H, boxes, id2box, time=bsg_time, args=args, verbose=verbose)
-                    persistens = False
-                except:
-                    persistens = True
-
+            remaining, loaded, s.utilization = bsg_solve(ssh,L,W,H, boxes, id2box, time=bsg_time, args=args, verbose=verbose)
             if(len(remaining) != 0):
                 return False
             else: s.verify = True
