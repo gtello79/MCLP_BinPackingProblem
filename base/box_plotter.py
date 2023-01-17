@@ -83,12 +83,16 @@ def save_container(cont_dim, box_dims, filename):
 
     # Configurando grafico
     fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
         scene=dict(
-            xaxis=dict(nticks=14, range=[0, cont_dim[0]], ),
-            yaxis=dict(nticks=14, range=[0, cont_dim[1]], ),
-            zaxis=dict(nticks=14, range=[0, cont_dim[2]], ),
+            xaxis=dict(nticks=10, range=[0, cont_dim[0]], ),
+            yaxis=dict(nticks=5, range=[0, cont_dim[1]], ),
+            zaxis=dict(nticks=5, tickfont=dict(size=15), range=[0, cont_dim[2]], ),
             xaxis_showspikes=False,
             yaxis_showspikes=False,
+            camera=dict(up=dict(x=0, y=0, z=1),
+                      center=dict(x=0, y=0, z=0),
+                        eye=dict(x=-2, y=2, z=1.5))
         ),
     )
 
