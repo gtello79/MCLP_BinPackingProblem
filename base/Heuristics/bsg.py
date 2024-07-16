@@ -30,52 +30,10 @@ def load_BRinstance(filename, inst=1, nbox=1):
                 return L, W, H, boxes, id2box
 
 
-def load_BRKGAinstance(filename, inst=1, nbox=1, rot_allowed=False):
-    boxes = {}
-    id2box = {}
-    with open(filename) as f:
-        for i in range(inst):
-            next(f)
-            n_boxes, L, W, H = [int(x) for x in next(f).split()]
-            for it in range(n_boxes):
-                l, w, h = [int(x) for x in next(f).split()]
-                if i == inst - 1:
-                    if rot_allowed:
-                        b = box(it + 1, l, w, h, 1, 1, 1)
-                    else:
-                        b = box(it + 1, l, w, h, 0, 0, 0)
-                    # Multiplicar nn para complejizar el problema
-                    boxes[b] = nbox
-                    id2box[it + 1] = b
-            # next(f)
-            if i == inst - 1:
-                return L, W, H, boxes, id2box
 
 
-def load_LargeInstance(filename, nbox=1, rot_allowed=False):
-    boxes = {}
-    id2box = {}
-    try:
-        with open(filename) as f:
-            # n_boxes, L, W, H =  [int(x) for x in next(f).split()]
-            L, W, H = 609, 243, 243
-            line = next(f)
-            id = 0
-            while line is not None:
-                values = re.findall("\d+", line)
-                values = [int(v) for v in values]
-                for i in range(int(len(values) / 3)):
-                    id += 1
-                    l, w, h = values[i * 3 : i * 3 + 3]
-                    if rot_allowed:
-                        b = box(id, l, w, h, 1, 1, 1)
-                    else:
-                        b = box(id, l, w, h, 0, 0, 0)
-                    boxes[b] = nbox
-                    id2box[id] = b
-                line = next(f)
-    except StopIteration:
-        return L, W, H, boxes, id2box
+
+
 
 
 def load_productInstance(filename, nbox=1, rot_allowed=False):
@@ -112,32 +70,6 @@ def load_productInstance(filename, nbox=1, rot_allowed=False):
     return L, W, H, boxes, id2box
 
 
-def load_instances_elhedhli(filename, rot_allowed=False):
-    boxes = {}
-    id2box = {}
-    try:
-        with open(filename) as f:
-            L, W, H = 1200, 800, 2055
-            line = next(f)
-            id = 0
-            while line:
-                id += 1
-                # "Width" "Depth" "Height" "Weight" "Load Capacity" "Width Reduce" "Depth Reduce" "Shape Type" "Repetition" "Sequence Number
-                w, l, h, _, _, _, _, _, nbox, _ = line.split("\t")
-                w, l, h, nbox = int(w), int(l), int(h), int(nbox)
-
-                if rot_allowed:
-                    b = box(id, l, w, h, 1, 1, 1)
-                else:
-                    b = box(id, l, w, h, 0, 0, 0)
-
-                boxes[b] = nbox
-                id2box[id] = b
-                line = next(f)
-
-    except StopIteration:
-        return L, W, H, boxes, id2box
-
 
 def write_instance(L, W, H, boxes, filename):
     txt = f'1\n1 0\n{L} {W} {H}\n'
@@ -171,7 +103,8 @@ def bsg_solve(
         + " --json "
         + args
     )
-    if verbose == True:
+    
+    if verbose:
         print(command)
 
     stdin, stdout, stderr = ssh.exec_command(command)
