@@ -1,6 +1,4 @@
-from numpy.lib.function_base import _calculate_shapes
 import random
-
 
 class bin:
     def __init__(self, id, boxes, utilization, layout=None):

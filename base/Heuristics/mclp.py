@@ -1,10 +1,7 @@
 import random
-import os
-from scp import SCPClient
-from box import box
 import numpy as np
-from bsg import bsg_solve
-from bin import bin
+from base.Heuristics.bsg import bsg_solve
+from base.baseline.bin import bin
 
 Vmax = None; L=None; W=None; H=None
 
@@ -27,7 +24,7 @@ def generate_candidate_solution(ssh,_L,_W,_H, boxes, id2box,r_param = 1.0, bsg_t
             boxes_keys = list(boxes.keys())
             r =  random.randint(0, len(boxes_keys)-1)
             b = boxes_keys[r]
-            n = min(boxes[b],8)    
+            n = min(boxes[b],8)
             boxes[b] = boxes[b]-n
 
             # No quedan mas cajas del tipo b
@@ -44,8 +41,13 @@ def generate_candidate_solution(ssh,_L,_W,_H, boxes, id2box,r_param = 1.0, bsg_t
             vol_c = vol_c + vol_box*n
 
         #Evaluar contenedor cajas obtenidas 
-        remaining, loaded, utilization = bsg_solve(ssh,L,W,H, c , id2box, time=bsg_time, args=extra_args)
-        container = bin(solution_size, loaded, utilization)
+        remaining, loaded, json_data = bsg_solve(ssh,L,W,H, c , id2box, time=bsg_time, args=extra_args)
+        utilization = json_data["utilization"]
+
+        #print("bin", solution_size, utilization)
+        layout = None
+        if "layout" in json_data: layout=json_data["layout"]
+        container = bin(solution_size, loaded, utilization, layout)
         #Se agrega la solucion
         solution = np.append(solution, container)
         
@@ -56,7 +58,6 @@ def generate_candidate_solution(ssh,_L,_W,_H, boxes, id2box,r_param = 1.0, bsg_t
             else:
                 boxes[key] = remaining[key]
 
-    print("Initial Solution: {}".format(len(solution)))
     return solution
 
 def print_solution(solution:list):
@@ -80,8 +81,6 @@ def calculate_prob(solution: list, metric:float) -> float:
             v = get_vol_by_boxes_group(s.boxes)
             if(v > metric):
                 counter += 1
-
-
     prob_calculate = (float)(counter/size)
     return prob_calculate
 
@@ -96,9 +95,8 @@ def get_media_volumen(solution:list) -> float:
             size+=1 
     
     media = float(ponderate/size)
-    return media    
+    return media
 
-import random
 def get_random_bin(s:list, b:bin = None) -> object:
     
     get_id = int(random.randint(0, len(s)-1))
@@ -153,10 +151,18 @@ def verify_solution(ssh, solution: list, id2box, bsg_time=5, args="", verbose=Fa
     for s in solution:
         if(not(s.verify)):
             boxes = s.boxes
-            remaining, loaded, s.utilization = bsg_solve(ssh,L,W,H, boxes, id2box, time=bsg_time, args=args, verbose=verbose)
+            persistens = True
+            while(persistens):
+                try:
+                    remaining, _, s.utilization = bsg_solve(ssh,L,W,H, boxes, id2box, time=bsg_time, args=args, verbose=verbose)
+                    persistens = False
+                except Exception:
+                    persistens = True
+
             if(len(remaining) != 0):
                 return False
-            else: s.verify = True
+            else: 
+                s.verify = True
                 
     return factibility
 

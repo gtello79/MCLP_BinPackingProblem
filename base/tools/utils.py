@@ -1,11 +1,9 @@
 import matplotlib.pyplot as plt 
 import random as rand
-import numpy as np
 
 dimBox = dict()
 vol = dict()
 volBin = dict() #Volumen de cada bin
-
 
 def popRandomBin(bins):
     rPos = int(rand.random()*len(bins))
