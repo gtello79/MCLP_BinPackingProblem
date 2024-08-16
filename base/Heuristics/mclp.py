@@ -1,276 +1,270 @@
-import random
-import numpy as np
+import random as rd
 from base.Heuristics.bsg import bsg_solve
 from base.baseline.bin import bin
+from base.INSTACE_PARAM import MIN_BOXES_TO_POP
+import copy as cp
 
-Vmax = None; L=None; W=None; H=None
+def generate_candidate_solution(
+    ssh,
+    L,
+    W,
+    H,
+    boxes,
+    id2box,
+    r_param=1.0,
+    bsg_time=1,
+    extra_args="--greedy_only --min_fr=0.98",
+    verbose=False,
+) -> list:
+    
 
-def generate_candidate_solution(ssh,_L,_W,_H, boxes, id2box,r_param = 1.0, bsg_time=1, extra_args="--greedy_only --min_fr=0.98") -> list:
-    L=_L; W=_W; H=_H
-    
-    Vmax = L*W*H
-    
+    n_boxes = bin.get_nboxes(boxes)
+
     solution_size = 0
-    solution = np.array([])
+    solution = []
+    n_supported_items = 0
+    tot_support = 0.0
 
-    #Generating candidate Solution
-    while(len(boxes) > 0):
-        solution_size +=1 
+    # Generating candidate Solution
+    while len(boxes) > 0:
+        solution_size += 1
         vol_c = 0
         c = dict()
-
-        #Llenado del contenedor
-        while(vol_c < r_param*Vmax and len(boxes) != 0):
+        # Llenado del contenedor
+        while vol_c < r_param and len(boxes) != 0:
             boxes_keys = list(boxes.keys())
-            r =  random.randint(0, len(boxes_keys)-1)
+            r = rd.randint(0, len(boxes_keys) - 1)
+
             b = boxes_keys[r]
-            n = min(boxes[b],8)
-            boxes[b] = boxes[b]-n
+            n = min(boxes[b], MIN_BOXES_TO_POP)
+            boxes[b] = boxes[b] - n
 
             # No quedan mas cajas del tipo b
-            if(boxes[b] == 0):
+            if boxes[b] == 0:
                 boxes.pop(b)
 
-            #Agregar cantidad de cajas
-            if(b not in c):
-                c[b] = n
-            else:
-                c[b] = c[b]+n
-            
+            # Si no se ha agregado el tipo de caja
+            if b not in c:
+                c[b] = 0
+
+            # Agregar cantidad de cajas
+            c[b] = c[b] + n
+
             vol_box = b.vol
-            vol_c = vol_c + vol_box*n
+            vol_c = vol_c + vol_box * n
 
-        #Evaluar contenedor cajas obtenidas 
-        remaining, loaded, json_data = bsg_solve(ssh,L,W,H, c , id2box, time=bsg_time, args=extra_args)
+        # Evaluar contenedor cajas obtenidas
+
+        remaining, loaded, json_data = bsg_solve(
+            ssh, L, W, H, c, id2box, time=bsg_time, args=extra_args, verbose=False
+        )
+
         utilization = json_data["utilization"]
+        support = json_data["tot_support"]
+        full_supported_items = json_data["full_supported_items"]
 
-        #print("bin", solution_size, utilization)
-        layout = None
-        if "layout" in json_data: layout=json_data["layout"]
+        tot_support += support
+        n_supported_items += full_supported_items
+        if verbose:
+            print(utilization, end=" ")
+
+        layout = json_data.get("layout", None)
+
         container = bin(solution_size, loaded, utilization, layout)
-        #Se agrega la solucion
-        solution = np.append(solution, container)
-        
+
+        # Se agrega la solucion
+        solution.append(container)
+
         # añadiendo las restantes para ser distribuidas nuevamente
         for key in remaining:
-            if(key in boxes):
+            if key in boxes:
                 boxes[key] += remaining[key]
             else:
                 boxes[key] = remaining[key]
 
+    av_support = tot_support / n_boxes
+    supported_items = n_supported_items / n_boxes
+
+    if verbose:
+        print(
+            f"Initial Solution: {len(solution)} av_support: {av_support} supported_items: {supported_items}"
+        )
+
     return solution
 
-def print_solution(solution:list):
-    sol_size = 0
-    for s in solution:
-        
-        vol = get_vol_by_boxes_group(boxes = s.boxes)
-        if vol != 0.0 :
-            print("id: {} - vol: {}".format(s.id, vol))
-            sol_size+=1
-        
-    print("Solution Size: {}".format(sol_size))
-    
-# Retorna la probabilidad de llenar el
-def calculate_prob(solution: list, metric:float) -> float:
+
+# Retorna la probabilidad de llenar el bin
+def calculate_prob(solution: list, metric: float) -> float:
     counter = 0
     size = 0
     for s in solution:
-        if(len(s.boxes) != 0):
-            size+=1
-            v = get_vol_by_boxes_group(s.boxes)
-            if(v > metric):
+        if len(s.boxes) != 0:
+            size += 1
+            v = bin.get_vol_by_boxes_group(s.boxes)
+            if v > metric:
                 counter += 1
-    prob_calculate = (float)(counter/size)
+    prob_calculate = (float)(counter / size)
     return prob_calculate
 
-def get_media_volumen(solution:list) -> float:
-    ponderate = 0
-    size = 0
 
-    for s in solution:
-        bin_boxes = s.boxes
-        if(len(bin_boxes) != 0):
-            ponderate += get_vol_by_boxes_group(bin_boxes)
-            size+=1 
-    
-    media = float(ponderate/size)
-    return media
+def get_random_bin(solution_list: list, b: bin = None) -> bin:
+    index_bin = rd.randint(0, len(solution_list) - 1)
+    bin_selected = solution_list[index_bin]
 
-def get_random_bin(s:list, b:bin = None) -> object:
-    
-    get_id = int(random.randint(0, len(s)-1))
-    bin_selected = s[get_id]
+    # Se retorna un bin distinto al seleccionado y que no este vacio
+    while b == bin_selected or len(bin_selected.boxes) == 0:
 
-    #Se retorna un bin distinto al seleccionado y que no este vacio
-    while(b == bin_selected or len(bin_selected.boxes) == 0):
-        get_id = int(random.randint(0, len(s)-1))
-        bin_selected = s[get_id]
-    
+        index_bin = int(rd.randint(0, len(solution_list) - 1))
+        bin_selected = solution_list[index_bin]
+
     return bin_selected
 
-def pop_random_boxes_from_bin(last_bin: object, cant_boxes: int) -> dict:
-    boxes_to_share = dict()
-    boxes = last_bin.boxes
 
-    for i in range(cant_boxes):
-        total_keys = list(boxes.keys())
-        
-        #Selecciona una caja aleatoria
-        get_id = int(random.randint(0, len(total_keys)-1))
-        box = total_keys[get_id]
-        boxes[box] = boxes[box]-1
-
-        # Agrega la caja al conjunto
-        if(box not in boxes_to_share):
-            boxes_to_share[box] = 1
-        else:
-            boxes_to_share[box] = boxes_to_share[box]+1
-        
-        # Elimina la caja del conjunto si no quedan mas
-        if(boxes[box] == 0):
-            boxes.pop(box)
-        
-        if(len(boxes) == 0):
-            break
-    
-    return boxes_to_share
-
-def eval_list_bins(solution:list, media) -> float:
+def eval_list_bins(solution: list, media) -> float:
     quality = 0.0
 
     for b in solution:
         bin_boxes = b.boxes
-        diff = get_vol_by_boxes_group(bin_boxes) - media
-        quality += pow(diff,2)
+        diff = bin.get_vol_by_boxes_group(bin_boxes) - media
+        quality += pow(diff, 2)
 
     return quality
 
-def verify_solution(ssh, solution: list, id2box, bsg_time=5, args="", verbose=False) -> bool:
+
+def verify_solution(
+    ssh,
+    L: int,
+    W: int,
+    H: int,
+    solution: list,
+    id2box,
+    bsg_time=5,
+    args="",
+    verbose=False,
+) -> bool:
     factibility = True
     for s in solution:
-        if(not(s.verify)):
+        if not (s.verify):
             boxes = s.boxes
-            persistens = True
-            while(persistens):
-                try:
-                    remaining, _, s.utilization = bsg_solve(ssh,L,W,H, boxes, id2box, time=bsg_time, args=args, verbose=verbose)
-                    persistens = False
-                except Exception:
-                    persistens = True
 
-            if(len(remaining) != 0):
+            persistens = True
+            while persistens:
+                try:
+                    final = bsg_solve(
+                        ssh,
+                        L,
+                        W,
+                        H,
+                        boxes,
+                        id2box,
+                        time=bsg_time,
+                        args=args,
+                        verbose=verbose,
+                    )
+                    remaining, _, s.utilization = final
+                    persistens = False
+                except Exception as e:
+                    persistens = True
+                    raise(e)
+
+            if len(remaining) != 0:
                 return False
-            else: 
+            else:
                 s.verify = True
-                
     return factibility
 
-def random_swap(solution:list, media_volumen:float, verbose=False):
-    # Seleccionar bin 1 y 2 
-    bin_1 = get_random_bin(s = solution) 
-    bin_2 = get_random_bin(s = solution, b = bin_1)
+
+def swap(solution, n=2, max_vol_accept=1.0, tolerance=0.1):
     
-    v1 = get_vol_by_boxes_group(bin_1.boxes)
-    v2 = get_vol_by_boxes_group(bin_2.boxes)
-
-    var_initial = eval_list_bins([bin_1, bin_2], media_volumen)
-
-    if verbose:
-        print("Initial ")
-        print("Bin 1: {} ".format(v1))
-        print("Bin 2: {} ".format(v2))
-        print("Var:", var_initial)
-
-    # Seleccionar boxes del bin 1
-    total_boxes = int(random.randint(1, 2))
-    boxes_1 = pop_random_boxes_from_bin(last_bin=bin_1, cant_boxes=total_boxes)
-
-    # Se agregan cajas de bin_1 en bin_2
-    for box in boxes_1:
-        if(box not in bin_2.boxes):
-            bin_2.boxes[box] = boxes_1[box]
-        else:
-            bin_2.boxes[box] = bin_2.boxes[box] + boxes_1[box]
-    bin_2.verify = False
+    r = tolerance * rd.random()
+    nA = rd.randint(1, n)
+    nB = rd.randint(0, n)
     
-    v2 = get_vol_by_boxes_group(bin_2.boxes)
-    
-    # Probabilidad de poder llenar el bin 2
-    # Probabilidad = Proporcion de bins con volumen mayor a v2
+    # Se escogen dos bin
+    bin_A = get_random_bin(solution_list=solution)
+    bin_B = get_random_bin(solution_list=solution, b=bin_A)
 
-    p1 = None
-    p2 = calculate_prob(solution, v2)
-    # Seleccionar cajas desde el bin b_2
-    while( p2 <= random.random() ):
-            
-        v1 = get_vol_by_boxes_group(bin_1.boxes)
-        v2 = get_vol_by_boxes_group(bin_2.boxes)
-        p1 = calculate_prob(solution, v1)
-        
-        # Se espera solo una caja desde bin_2
-        boxes_2 = pop_random_boxes_from_bin(last_bin=bin_2, cant_boxes= 1)
-        box_2 = list(boxes_2.keys())[0] 
+    iniA = bin_A.vol
+    iniB = bin_B.vol
+    var_ini = (iniA - 1.0) ** 2 + (iniB - 1.0) ** 2
 
-        if(predict_vol(bin_1.boxes, box_2) > 1 ):
-            # print("La caja escogida sobrepasa el máximo del bin 1")
-            return None, -1  
+    boxes_A = bin_A.pop_random_boxes(nA)
+    boxes_B = bin_B.pop_random_boxes(nB)
 
-        # Se agrega la caja al conjunto del bin2 
-        if(box_2 not in bin_1.boxes):  
-            bin_1.boxes[box_2] = 1
-        else:
-            bin_1.boxes[box_2] = bin_1.boxes[box_2] + 1
-        bin_1.verify = False
+    adjvolA = bin.get_vol_by_boxes_group(boxes_A)
+    adjvolB = bin.get_vol_by_boxes_group(boxes_B)
 
-        v1 = get_vol_by_boxes_group(bin_1.boxes)
-        v2 = get_vol_by_boxes_group(bin_2.boxes)
-        p2 = calculate_prob(solution, v2)
-        p1 = calculate_prob(solution, v1) # -> 0: No se puede llenar
+    condition_1 = adjvolA > adjvolB and iniB + adjvolA <= max_vol_accept + r
+    condition_2 = adjvolB > adjvolA and iniA + adjvolB <= max_vol_accept + r
 
-        if( p1 <= random.random()):
-            return None, -1
+    if condition_1 or condition_2:
+        bin_A.insert_boxes(boxes_B)
+        bin_B.insert_boxes(boxes_A)
 
-        if(len(bin_2.boxes) == 0):
-            # print("Empty bin 2")
-            break
-    
-    if(v2 > 1):
-        # print("Sobrepasa Volumen del bin 2")
-        return None, -1
     else:
-        if verbose: print("After Swap")
-        v1 = get_vol_by_boxes_group(bin_1.boxes)
-        v2 = get_vol_by_boxes_group(bin_2.boxes)  
-        bin_1.utilization = v1
-        bin_2.utilization = v2
-        bin_1.p = p1
-        bin_2.p = p2
+        bin_A.insert_boxes(boxes_A)
+        bin_B.insert_boxes(boxes_B)
+
+
+    bin_A.calculate_vol()
+    bin_B.calculate_vol()
+
+    iniA = bin_A.vol
+    iniB = bin_B.vol
+    var_final = (iniA - 1.0) ** 2 + (iniB - 1.0) ** 2
+    var_diff = var_final - var_ini
+
+    return var_diff if condition_1 or condition_2 else -10
+
+
+def random_swaps(
+    ssh,
+    L,
+    W,
+    H,
+    id2box,
+    best_solution,
+    max_iter=100000,
+    extra_args="",
+    lb=1,
+    max_no_improvements=50,
+):
+    if len(best_solution) == lb:
+        return best_solution
+
+    no_improvements = 0
+    for i in range(max_iter):
+        solution = cp.deepcopy(best_solution)
+        diff_var = swap(
+            solution, n=2, max_vol_accept=0.65, tolerance=0.3)
+        print(i, diff_var, len(solution))
         
-        var_final = eval_list_bins([bin_1, bin_2], media_volumen)
-        eval = var_final - var_initial
-        
-        if verbose:
-            print("Bin 1: {} ".format(v1))
-            print("Bin 2: {} ".format(v2))
-            print("prob:", p1, p2)
-            print("Varianza Inicial: {}. Varianza final: {}".format(var_initial, var_final ))
+        if diff_var > 1e-7:
+            print('Verify solution')
+            verified_solution = verify_solution(
+                ssh,
+                L,
+                W,
+                H,
+                solution,
+                id2box,
+                bsg_time=5,
+                args=extra_args,
+                verbose=False,
+            )
 
-        return solution, eval
+            if verified_solution:
+                no_improvements = 0
+                best_solution = []
+                for b in solution:
+                    b.calculate_vol()
+                    if b.vol > 1e-5:
+                        best_solution.append(cp.deepcopy(b))
 
+            else:
+                no_improvements += 1
 
-# El bin debería mantener su volumen actualizado y
-# estas funciones no deberían utilizarse
-def get_vol_by_boxes_group(boxes: dict) -> float:
-    vol = 0.0
-    for box in boxes:
-        vol += box.vol*boxes[box]
-    final_vol = float(vol/Vmax)
-    
-    return final_vol
+        if no_improvements > max_no_improvements or len(best_solution) == lb:
+            break
 
-def predict_vol(boxes:dict, box: object) -> float:
-    vol_box = box.vol
-    vol_bin = get_vol_by_boxes_group(boxes)
-    total_vol = float(vol_box/Vmax) + vol_bin
-    return total_vol
+    return best_solution

@@ -1,3 +1,6 @@
 tmp_instance_*
-base/.ipynb_checkpoints/*
-base/__pycache__/*
+base/.ipynb_checkpoints
+base/__pycache__
+*/.ipynb_checkpoints
+*/__pycache__
+*/.ipynb_checkpoints/*

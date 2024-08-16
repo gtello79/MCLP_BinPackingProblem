@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt 
+from base.baseline.bin import bin
 import random as rand
 
 dimBox = dict()
@@ -16,7 +17,7 @@ def calculateComplex(idBox, dim):
     vol = x*y*z
     return ( ( (x/z)*(x/y)*(y/z) )**expo ) * vol
 
-def vol(listBoxes, boxes):
+def volumen(listBoxes, boxes):
     totalVol = 0
     for box in listBoxes:
         x,y,z = boxes[box]
@@ -42,10 +43,7 @@ def getMostComplexBox(bin, boxes):
     return idBox, eval
 
 def createPlot(InitialVol, finalVol):
-    id_bins_first = list( InitialVol.keys() )
     size_initial_bins = list( InitialVol.items() )
-
-    id_bins_final = list( finalVol.keys() )
     size_final_bins = list( finalVol.items() )
 
     plt.plot(size_initial_bins, label = 'First Solution')
@@ -54,3 +52,14 @@ def createPlot(InitialVol, finalVol):
     plt.title('Volumen asociado a cada bin')
     plt.legend()
     plt.show()
+
+def print_solution(solution:list):
+    sol_size = 0
+    for s in solution:
+        
+        vol = bin.get_vol_by_boxes_group(boxes = s.boxes)
+        if vol != 0.0 :
+            print("id: {} - vol: {}".format(s.id, vol))
+            sol_size+=1
+        
+    print("Solution Size: {}".format(sol_size))

@@ -1,0 +1,23 @@
+VERBOSE = False
+
+# Algorithm settings
+min_fr = 0.99               # minimo porcentaje ocupado para considerar la generación de un bloque
+max_bl = 10000              # maxima cantidad de bloques a generar por bsg
+min_bin = 1000
+
+instances_name = "martello"
+MAX_ITER = 10
+bsg_time = 1
+r_param = 1.5
+n_runs = 5
+max_no_improvements = 50
+MIN_BOXES_TO_POP = 8
+swaps = "--"
+
+
+# Connection params
+host = "158.251.88.197"
+host_2 = "158.251.93.9"
+port = 22
+username = "iaraya"
+password = "lunyta22"

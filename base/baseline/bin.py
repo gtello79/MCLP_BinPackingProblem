@@ -2,30 +2,29 @@ import random
 
 class bin:
     def __init__(self, id, boxes, utilization, layout=None):
-        self.id = id
-        self.boxes = boxes
-        self.utilization = utilization
-        self.verify = True
-        self.vol=0.0
-        self.layout = layout 
-        
-    def set_adj_vol(self, adj_vol):
-        self.adj_vol = adj_vol
-        
-    def set_vol(self, vol):
-        self.vol = vol
-        
+        self.id:int = id
+        self.boxes: dict = boxes
+        self.utilization:float = utilization
+        self.verify:bool = True
+        self.vol:float = 0.0
+        self.layout = layout
+
+        self.calculate_boxes()
+        self.calculate_vol()
+
+
     def insert_boxes(self, boxes):
         for box in boxes:
+
             if box not in self.boxes:
-                self.boxes[box] = boxes[box]
-            else:
-                self.boxes[box] = self.boxes[box] + boxes[box]
-            self.adj_vol += box.adj_vol*boxes[box]
+                self.boxes[box] = 0
+
+            self.boxes[box] += boxes[box]
+
             self.vol += box.vol*boxes[box]
+
         self.verify = False   
-        
-    
+
     def pop_random_boxes(self, n):
         boxes_to_share = dict()
         boxes = self.boxes
@@ -34,10 +33,9 @@ class bin:
             total_keys = list(boxes.keys())
 
             #Selecciona una caja aleatoria
-            get_id = int(random.randint(0, len(total_keys)-1))
+            get_id = random.randint(0, len(total_keys)-1)
             box = total_keys[get_id]
             boxes[box] = boxes[box]-1
-            self.adj_vol -= box.adj_vol
             self.vol -= box.vol
 
             # Agrega la caja al conjunto
@@ -84,3 +82,34 @@ class bin:
         for box in self.boxes.keys():
             boxes_list = boxes_list + str([box.id, self.boxes[box]]) + ", "
         return boxes_list
+
+    def calculate_boxes(self) -> int:
+        n = 0
+        for box in self.boxes:
+            n += self.boxes[box]
+        return n
+
+    def calculate_vol(self) -> float:
+        self.vol=0.0
+
+        for box in self.boxes:
+            self.vol += box.vol*self.boxes[box]
+
+        return self.vol
+
+    @classmethod
+    def get_nboxes(cls, boxes):
+        n = 0
+        for box in boxes:
+            n += boxes[box]
+        return n 
+
+    @classmethod
+    # El bin debería mantener su volumen actualizado y
+    # estas funciones no deberían utilizarse
+    def get_vol_by_boxes_group(cls, boxes: dict) -> float:
+        final_vol = 0.0
+        for box in boxes:
+            final_vol += box.vol * boxes[box]
+
+        return final_vol
