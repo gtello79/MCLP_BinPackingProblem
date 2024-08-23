@@ -63,7 +63,7 @@ params_args = parse_arguments()
 min_fr = params_args.min_fr
 # maxima cantidad de bloques a generar por bsg
 max_bl = params_args.max_bl
-#MAX_ITER = params_args.MAX_ITER
+# MAX_ITER = params_args.MAX_ITER
 instances_name = params_args.instance
 ## Tiempo de BSG
 bsg_time = params_args.bsg_time
@@ -84,19 +84,30 @@ ssh.connect(host, port, username, password)
 dataloader = DatasetLoader(instances_name)
 instance_files = dataloader.instances_list
 
+
+# Imprime todos los parametros que son importados
+print(f"Instances: {instances_name}")
+print(
+    f"min_fr={min_fr}, max_bl={max_bl}, bsg_time={bsg_time}, r_param={r_param}, n_runs={n_runs}, max_no_improvements={max_no_improvements}"
+)
+print(f"Extra args: {extra_args}")
+
 filename_list = []
 results = []
-best_sols = []
+best_sols_list = []
 times_list = []
 min_list = []
+
 for filename in instance_files:
+    start_time = timeit.default_timer()
+    times = []
+
     sols = []
     best_sols = []
-    times = []
 
     tot_bins = 0
     min_bins = min_bin
-    start = timeit.default_timer()
+
     # Load instance info
     L, W, H, _boxes, id2box = dataloader.get_instance(filename=filename)
     total_vol = bin.get_vol_by_boxes_group(_boxes)
@@ -105,6 +116,8 @@ for filename in instance_files:
     # Running experiments
     for k in range(n_runs):
         boxes = _boxes.copy()
+
+        # Generate initial solution
         best_solution = generate_candidate_solution(
             ssh,
             L,
@@ -118,6 +131,7 @@ for filename in instance_files:
             verbose=VERBOSE,
         )
 
+        # Aplication Swaps
         if swaps == "--swaps":
             best_solution = random_swaps(
                 ssh,
@@ -131,35 +145,49 @@ for filename in instance_files:
                 max_no_improvements=max_no_improvements,
                 lb=lb,
             )
+
         tot_bins += len(best_solution)
 
+        # Store the min solution of the run
         if len(best_solution) < min_bins:
             min_bins = len(best_solution)
 
-    stop = timeit.default_timer()
+    resolution_time = timeit.default_timer() - start_time
+
+    # Store results
     sols.append(tot_bins / n_runs)
     best_sols.append(min_bins)
-    times.append(stop - start)
+    times.append(resolution_time)
 
     print(filename, ":", min(sols), mean(sols), mean(best_sols), mean(times))
 
-    filename_list.append(filename)
+    # Present information for the DataFrame
+    filename_list.append(filename[0])
     results.append(mean(sols))
-    best_sols.append(mean(best_sols))
+    best_sols_list.append(mean(best_sols))
     times_list.append(mean(times))
     min_list.append(min(sols))
 
+# Export results
+class_boxes_list = []
+min_bins = []
+mean_sols = []
+mean_best_sols = []
+mean_time = []
 
-csv_file = "results.csv"
-print(len(filename_list), len(results), len(best_sols), len(times_list), len(min_list))
+current_time = timeit.default_timer()
+csv_file = f"base/Results/InicialSolution/{instances_name}/results_{r_param}_{current_time}.csv"
 
-df = DataFrame(
-    {
-        "filename": filename_list,
-        "min_bins": min_list,
-        "results": results,
-        "best_sols": best_sols,
-        "times": times_list,
-    }
-)
-df.to_csv(csv_file, index=False)
+if instances_name == 'martello':
+
+    df = DataFrame(
+        {
+            "filename": filename_list,
+            "min_bins": min_list,
+            "results": results,
+            "best_sols": best_sols_list,
+            "times": times_list,
+        }
+    )
+    df.to_csv(csv_file, index=False)
+
