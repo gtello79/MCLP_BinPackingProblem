@@ -12,7 +12,7 @@ bsg_time = 5
 r_param = 1
 n_runs = 5
 max_no_improvements = 50
-MIN_BOXES_TO_POP = 1
+MIN_BOXES_TO_POP = 8
 swaps = "--"
 
 

@@ -77,6 +77,7 @@ extra_args = f"--max_bl={max_bl} --min_fr={min_fr} --bottom_up --show_layout"
 if bsg_time == 0:
     extra_args += " --greedy_only"
 
+# Make connection with the server
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh.connect(host, port, username, password)
@@ -110,8 +111,10 @@ for filename in instance_files:
 
     # Load instance info
     L, W, H, _boxes, id2box = dataloader.get_instance(filename=filename)
+
     total_vol = bin.get_vol_by_boxes_group(_boxes)
     lb = math.ceil(total_vol)
+
 
     # Running experiments
     for k in range(n_runs):

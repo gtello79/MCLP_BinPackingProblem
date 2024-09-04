@@ -16,22 +16,22 @@ def generate_candidate_solution(
     extra_args="--greedy_only --min_fr=0.98",
     verbose=False,
 ) -> list:
-    
 
     n_boxes = bin.get_nboxes(boxes)
-
-    solution_size = 0
+    # Identificador de bin
+    solution_id = 1
     solution = []
     n_supported_items = 0
     tot_support = 0.0
 
     # Generating candidate Solution
     while len(boxes) > 0:
-        solution_size += 1
+        
         vol_c = 0
         c = dict()
-        # Llenado del contenedor
-        while vol_c < r_param and len(boxes) != 0:
+
+        # Llenado del contenedor hasta que se cumpla el parametro
+        while (vol_c < r_param and len(boxes) != 0):
             boxes_keys = list(boxes.keys())
             r = rd.randint(0, len(boxes_keys) - 1)
 
@@ -54,7 +54,6 @@ def generate_candidate_solution(
             vol_c = vol_c + vol_box * n
 
         # Evaluar contenedor cajas obtenidas
-
         remaining, loaded, json_data = bsg_solve(
             ssh, L, W, H, c, id2box, time=bsg_time, args=extra_args, verbose=False
         )
@@ -70,8 +69,8 @@ def generate_candidate_solution(
 
         layout = json_data.get("layout", None)
 
-        container = bin(solution_size, loaded, utilization, layout)
-
+        container = bin(solution_id, loaded, utilization, layout)
+        
         # Se agrega la solucion
         solution.append(container)
 
@@ -82,8 +81,13 @@ def generate_candidate_solution(
             else:
                 boxes[key] = remaining[key]
 
+        solution_id += 1
+
+#    import pdb; pdb.set_trace()
+    
     av_support = tot_support / n_boxes
     supported_items = n_supported_items / n_boxes
+
 
     if verbose:
         print(

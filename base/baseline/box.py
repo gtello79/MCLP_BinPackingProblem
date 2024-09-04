@@ -1,16 +1,19 @@
 class box:
-    def __init__(self, dim, id):
-        self.idBox = id
-        self.x, self.y, self.z = dim
-        self.vol = self.x*self.y*self.z
-        self.complex = None
-        
-    def __init__(self, id, l, w, h, rotx, roty, rotz):
+
+    ## Constructor
+
+    def __init__(self, id, large, width, heigth, rotx , roty, rotz):
         self.id = id
-        self.l = l; self.w = w; self.h = h;
-        self.vol = l*w*h
-        self.rotx = rotx; self.roty = roty; self.rotz = rotz;
+        self.l = large
+        self.w = width
+        self.h = heigth
+        self.vol = large*heigth*width
+        self.rotx = rotx
+        self.roty = roty
+        self.rotz = rotz
+
+        self.calculateComplex()
     
     def calculateComplex(self):
         expo = 1
-        self.complex = ((((self.x/self.z)*(self.x/self.y)*(self.y/self.z)))**expo) * self.vol
+        self.complex = ((((self.l/self.h)*(self.l/self.w)*(self.w/self.h)))**expo) * self.vol

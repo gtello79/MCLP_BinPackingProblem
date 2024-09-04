@@ -10,7 +10,9 @@ class DatasetLoader:
         instance_files = []
         if self.instance_name == "martello":
             for cs in range(4, 8):
-                for sz in [50, 100, 150, 200]:
+                #boxes_size = [50, 100, 150, 200]
+                boxes_size = [50]
+                for sz in boxes_size:
                     total_instance = 10
                     for inst in range(total_instance):
                         # if cs<=5 and sz<=150 and inst <=8: continue

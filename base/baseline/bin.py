@@ -23,7 +23,7 @@ class bin:
 
             self.vol += box.vol*boxes[box]
 
-        self.verify = False   
+        self.verify = False
 
     def pop_random_boxes(self, n):
         boxes_to_share = dict()
@@ -98,11 +98,12 @@ class bin:
         return self.vol
 
     @classmethod
-    def get_nboxes(cls, boxes):
-        n = 0
+    def get_nboxes(cls, boxes:dict) -> int:
+        n_boxes = 0
         for box in boxes:
-            n += boxes[box]
-        return n 
+            n_boxes += boxes[box]
+
+        return n_boxes 
 
     @classmethod
     # El bin debería mantener su volumen actualizado y
