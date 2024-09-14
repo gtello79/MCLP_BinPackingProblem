@@ -29,7 +29,7 @@ class bin:
         boxes_to_share = dict()
         boxes = self.boxes
 
-        for i in range(n):
+        for _ in range(n):
             total_keys = list(boxes.keys())
 
             #Selecciona una caja aleatoria

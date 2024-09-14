@@ -3,6 +3,12 @@ from base.Heuristics.bsg import bsg_solve
 from base.baseline.bin import bin
 from base.INSTACE_PARAM import MIN_BOXES_TO_POP
 import copy as cp
+import timeit
+import time
+# Semilla generadora de numeros aleatorios en funcion del tiempo
+seed = int(timeit.default_timer())
+rd.seed(seed)
+
 
 def generate_candidate_solution(
     ssh,
@@ -16,7 +22,7 @@ def generate_candidate_solution(
     extra_args="--greedy_only --min_fr=0.98",
     verbose=False,
 ) -> list:
-
+    time_generation = time.time()
     n_boxes = bin.get_nboxes(boxes)
     # Identificador de bin
     solution_id = 1
@@ -30,7 +36,7 @@ def generate_candidate_solution(
         vol_c = 0
         c = dict()
 
-        # Llenado del contenedor hasta que se cumpla el parametro
+        # Llenado de un contenedor hasta quedarnos sin cajas
         while (vol_c < r_param and len(boxes) != 0):
             boxes_keys = list(boxes.keys())
             r = rd.randint(0, len(boxes_keys) - 1)
@@ -40,15 +46,14 @@ def generate_candidate_solution(
             boxes[b] = boxes[b] - n
 
             # No quedan mas cajas del tipo b
-            if boxes[b] == 0:
+            if(boxes[b] == 0):
                 boxes.pop(b)
 
-            # Si no se ha agregado el tipo de caja
-            if b not in c:
-                c[b] = 0
-
-            # Agregar cantidad de cajas
-            c[b] = c[b] + n
+            #Agregar cantidad de cajas
+            if(b not in c):
+                c[b] = n
+            else:
+                c[b] = c[b]+n
 
             vol_box = b.vol
             vol_c = vol_c + vol_box * n
@@ -87,11 +92,11 @@ def generate_candidate_solution(
     
     av_support = tot_support / n_boxes
     supported_items = n_supported_items / n_boxes
-
+    final_time = time.time() - time_generation
 
     if verbose:
         print(
-            f"Initial Solution: {len(solution)} av_support: {av_support} supported_items: {supported_items}"
+            f"Initial Solution: {len(solution)} av_support: {av_support} supported_items: {supported_items} time: {final_time}"
         )
 
     return solution

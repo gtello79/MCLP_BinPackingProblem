@@ -17,6 +17,7 @@ from base.INSTACE_PARAM import (
     password,
     min_bin,
     VERBOSE,
+    LOCAL_EXECUTION
 )
 
 from statistics import mean
@@ -73,7 +74,7 @@ n_runs = params_args.n_runs
 max_no_improvements = params_args.max_no_improvements
 
 # Define extra args
-extra_args = f"--max_bl={max_bl} --min_fr={min_fr} --bottom_up --show_layout"
+extra_args = f"--max_bl={max_bl} --min_fr={min_fr} --show_layout"
 if bsg_time == 0:
     extra_args += " --greedy_only"
 
@@ -87,7 +88,7 @@ instance_files = dataloader.instances_list
 
 
 # Imprime todos los parametros que son importados
-print(f"Instances: {instances_name}")
+print(f"Instances: {instances_name} - Execution on Local?: {LOCAL_EXECUTION}")
 print(
     f"min_fr={min_fr}, max_bl={max_bl}, bsg_time={bsg_time}, r_param={r_param}, n_runs={n_runs}, max_no_improvements={max_no_improvements}"
 )
@@ -99,98 +100,109 @@ best_sols_list = []
 times_list = []
 min_list = []
 
-for filename in instance_files:
-    start_time = timeit.default_timer()
-    times = []
+data = []
+try:
+    for filename in instance_files:
+        
+        times = []
 
-    sols = []
-    best_sols = []
+        sols = []
+        best_sols = []
 
-    tot_bins = 0
-    min_bins = min_bin
+        tot_bins = 0
+        min_bins = min_bin
 
-    # Load instance info
-    L, W, H, _boxes, id2box = dataloader.get_instance(filename=filename)
+        # Load instance info
+        L, W, H, _boxes, id2box = dataloader.get_instance(filename=filename)
 
-    total_vol = bin.get_vol_by_boxes_group(_boxes)
-    lb = math.ceil(total_vol)
+        total_vol = bin.get_vol_by_boxes_group(_boxes)
+        lb = math.ceil(total_vol)
 
 
-    # Running experiments
-    for k in range(n_runs):
-        boxes = _boxes.copy()
+        # Running experiments
+        for k in range(n_runs):
+            start_time = timeit.default_timer()
+            boxes = _boxes.copy()
 
-        # Generate initial solution
-        best_solution = generate_candidate_solution(
-            ssh,
-            L,
-            W,
-            H,
-            boxes,
-            id2box,
-            r_param=r_param,
-            bsg_time=bsg_time,
-            extra_args=extra_args,
-            verbose=VERBOSE,
-        )
-
-        # Aplication Swaps
-        if swaps == "--swaps":
-            best_solution = random_swaps(
+            # Generate initial solution
+            best_solution = generate_candidate_solution(
                 ssh,
                 L,
                 W,
                 H,
+                boxes,
                 id2box,
-                best_solution,
-                max_iter=MAX_ITER,
+                r_param=r_param,
+                bsg_time=bsg_time,
                 extra_args=extra_args,
-                max_no_improvements=max_no_improvements,
-                lb=lb,
+                verbose=VERBOSE,
             )
 
-        tot_bins += len(best_solution)
+            # Aplication Swaps
+            if swaps == "--swaps":
+                best_solution = random_swaps(
+                    ssh,
+                    L,
+                    W,
+                    H,
+                    id2box,
+                    best_solution,
+                    max_iter=MAX_ITER,
+                    extra_args=extra_args,
+                    max_no_improvements=max_no_improvements,
+                    lb=lb,
+                )
 
-        # Store the min solution of the run
-        if len(best_solution) < min_bins:
-            min_bins = len(best_solution)
+            tot_bins += len(best_solution)
 
-    resolution_time = timeit.default_timer() - start_time
+            # Store the min solution of the run
+            if len(best_solution) < min_bins:
+                min_bins = len(best_solution)
 
-    # Store results
-    sols.append(tot_bins / n_runs)
-    best_sols.append(min_bins)
-    times.append(resolution_time)
+            resolution_time = timeit.default_timer() - start_time
 
-    print(filename, ":", min(sols), mean(sols), mean(best_sols), mean(times))
+            # Store results
+            times.append(resolution_time)
 
-    # Present information for the DataFrame
-    filename_list.append(filename[0])
-    results.append(mean(sols))
-    best_sols_list.append(mean(best_sols))
-    times_list.append(mean(times))
-    min_list.append(min(sols))
+        sols.append(tot_bins / n_runs)
+        best_sols.append(min_bins)
 
-# Export results
-class_boxes_list = []
-min_bins = []
-mean_sols = []
-mean_best_sols = []
-mean_time = []
+        print(filename, ":", mean(best_sols), mean(sols), min(sols), mean(times))
+        current_info = (filename[0], filename[1], mean(best_sols), mean(sols), min(sols), mean(times))
+
+        data.append(current_info)
+
+        # Present information for the DataFrame
+        filename_list.append(filename[0])
+        results.append(mean(sols))
+        best_sols_list.append(mean(best_sols))
+        times_list.append(mean(times))
+        min_list.append(min(sols))
+
+
+except Exception as e:
+    print(e.with_traceback())
+    import pdb
+
+    pdb.set_trace()
 
 current_time = timeit.default_timer()
-csv_file = f"base/Results/InicialSolution/{instances_name}/results_{r_param}_{current_time}.csv"
-
 if instances_name == 'martello':
+    print(f'Creating results for {instances_name} with r_param {r_param} at {current_time}')
+    # Crear DataFrame
+    df = DataFrame(data, columns=["file", "instance", "best_solution", "average", "min_sol", "execution_time"])
 
-    df = DataFrame(
-        {
-            "filename": filename_list,
-            "min_bins": min_list,
-            "results": results,
-            "best_sols": best_sols_list,
-            "times": times_list,
-        }
-    )
+    # Crear DataFrame
+    csv_file = f"base/Results/InicialSolution/{instances_name}/results_{r_param}_{current_time}.csv"
     df.to_csv(csv_file, index=False)
+
+    # Agrupar por clase y calcular promedios
+    df = df.drop(columns=["instance"])
+    grouped_df = df.groupby("file").mean()
+
+    print(grouped_df)
+
+    # Crear DataFrame Consolidated
+    csv_file = f"base/Results/InicialSolution/{instances_name}/Consolidatedresults_{r_param}_{current_time}.csv"
+    grouped_df.to_csv(csv_file, index=True)
 
