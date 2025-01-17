@@ -7,7 +7,7 @@ max_bl = 10000
 min_bin = 1000
 
 instances_name = "martello"
-MAX_ITER = 5
+MAX_ITER = 100000           # Valor de persistencia del Swap
 bsg_time = 5
 r_param = 1.5
 n_runs = 5
