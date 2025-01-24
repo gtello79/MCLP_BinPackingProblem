@@ -115,20 +115,6 @@ def calculate_prob(solution: list, metric: float) -> float:
     prob_calculate = (float)(counter / size)
     return prob_calculate
 
-
-def get_random_bin(solution_list: list, b: bin = None) -> bin:
-    index_bin = rd.randint(0, len(solution_list) - 1)
-    bin_selected = solution_list[index_bin]
-
-    # Se retorna un bin distinto al seleccionado y que no este vacio
-    while b == bin_selected or len(bin_selected.boxes) == 0:
-
-        index_bin = int(rd.randint(0, len(solution_list) - 1))
-        bin_selected = solution_list[index_bin]
-
-    return bin_selected
-
-
 def eval_list_bins(solution: list, media) -> float:
     quality = 0.0
 

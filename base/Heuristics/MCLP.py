@@ -1,10 +1,12 @@
 import random as rd
-from base.Heuristics.bsg import bsg_solve
 from base.baseline.bin import bin
 from base.INSTACE_PARAM import MIN_BOXES_TO_POP
+import copy as cp
+from base.Heuristics.BPP import BPP
+from base.Heuristics.BSG import BSG
 
 
-class MCLP:
+class MCLP(BSG):
     def __init__(self, ssh, L, W, H, id2box, verbose) -> None:
         self.ssh = ssh
         self.L = L
@@ -14,6 +16,7 @@ class MCLP:
         self.solution = []
         self.solution_size = 0
         self.verbose = verbose
+        self.metrics = {}
 
     def generate_candidate_solution(
         self,
@@ -58,17 +61,10 @@ class MCLP:
                 vol_c = vol_c + vol_box * n
 
             # Evaluar contenedor cajas obtenidas
-
-            remaining, loaded, json_data = bsg_solve(
-                self.ssh,
-                self.L,
-                self.W,
-                self.H,
-                c,
-                self.id2box,
-                time=bsg_time,
+            remaining, loaded, json_data = self.bsg_solve(
+                boxes=c,
+                bsg_time=bsg_time,
                 args=extra_args,
-                verbose=False,
             )
             utilization = json_data["utilization"]
             support = json_data["tot_support"]
@@ -98,44 +94,106 @@ class MCLP:
 
         if self.verbose:
             print(
-                f"Initial Solution: {len(self.solution)} av_support: {av_support} supported_items: {supported_items}"
+                f"Initial Solution: {len(self.solution)} av_support: {
+                    av_support} supported_items: {supported_items}"
             )
 
+        # Saving metrics
+        self.metrics['solution_size'] = len(self.solution)
+        self.metrics['supported_items'] = supported_items
+        self.metrics['av_support'] = av_support
+
         return self.solution
+
+    def random_swaps(self,
+                     best_solution,
+                     max_iter=100000,
+                     extra_args="",
+                     lb=1,
+                     max_no_improvements=50,
+                     bsg_time=5
+                     ):
+
+        no_improvements = 0
+        for i in range(max_iter):
+            solution = cp.deepcopy(best_solution)
+
+            # Realize the Swap Process over the current solution
+            diff_var = BPP._swap(
+                solution=solution, n=2, max_vol_accept=0.65, tolerance=0.3)
+
+            # Evaluate de variation over 1e-7
+            if diff_var > 1e-7:
+
+                # Verify the factibility in the solution
+                verified_solution = self.verify_solution(
+                    solution=solution,
+                    bsg_time=bsg_time,
+                    args=extra_args,
+                )
+
+                if verified_solution:
+
+                    if self.verbose:
+                        print("A new solution verificated")
+                        print(f"Current {len(best_solution)
+                                         } -> New {len(solution)}")
+
+                    no_improvements = 0
+                    best_solution = []
+                    for b in solution:
+                        b.calculate_vol()
+                        if b.vol > 1e-5:
+                            best_solution.append(cp.deepcopy(b))
+
+                else:
+                    no_improvements += 1
+
+            if no_improvements > max_no_improvements or len(best_solution) == lb:
+                break
+
+        # Update Metrics
+        self.metrics['solution_size'] = len(self.solution)
+        self.solution = best_solution
+
+        return best_solution
 
     def verify_solution(
         self,
         solution: list,
-        id2box,
         bsg_time=5,
         args="",
     ) -> bool:
-        factibility = True
 
         for s in solution:
+            boxes = s.boxes
+
+            # Verification de bin objetivos
             if not (s.verify):
-                boxes = s.boxes
-                persistens = True
-                while persistens:
-                    try:
-
-                        remaining, _, s.utilization = bsg_solve(
-                            self.ssh,
-                            self.L,
-                            self.W,
-                            self.H,
-                            boxes,
-                            id2box,
-                            time=bsg_time,
-                            args=args,
-                            verbose=self.verbose,
-                        )
-                        persistens = False
-                    except Exception as e:
-                        persistens = True
-
-                if len(remaining) != 0:
-                    return False
+                if not boxes:
+                    # Omite los bins que no tienen cajas
+                    if self.verbose:
+                        print(f"Empty bin: {boxes} -> {s.vol}")
+                    continue
                 else:
-                    s.verify = True
-        return factibility
+                    remaining, _, s.utilization = self.bsg_solve(
+                        boxes=boxes,
+                        bsg_time=bsg_time,
+                        args=args,
+                    )
+
+                    correct_solution = len(remaining) == 0
+
+                    if correct_solution:
+                        s.verify = correct_solution
+                    else:
+                        return correct_solution
+
+            # If the solution was verificated
+            else:
+                continue
+
+        # Actualiza la solución con los bins encontrados
+        solution = [s for s in solution if s.verify]
+
+        return True
