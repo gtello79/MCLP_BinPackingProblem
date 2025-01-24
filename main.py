@@ -1,4 +1,4 @@
-from base.Heuristics.mclp import generate_candidate_solution, random_swaps
+from base.Heuristics.MCLP import MCLP
 from base.baseline.bin import bin
 from base.Heuristics.dataset import DatasetLoader
 from base.INSTACE_PARAM import (
@@ -118,41 +118,31 @@ try:
         total_vol = bin.get_vol_by_boxes_group(_boxes)
         lb = math.ceil(total_vol)
 
+        mclp_instance = MCLP(ssh,L,W,H,id2box,VERBOSE)
+
 
         # Running experiments
         for k in range(n_runs):
             start_time = timeit.default_timer()
             boxes = _boxes.copy()
 
-            # Generate initial solution
-            best_solution = generate_candidate_solution(
-                ssh,
-                L,
-                W,
-                H,
-                boxes,
-                id2box,
-                r_param=r_param,
-                bsg_time=bsg_time,
-                extra_args=extra_args,
-                verbose=VERBOSE,
-            )
+            # Generate initial solution(
+            best_solution = mclp_instance.generate_candidate_solution(boxes, r_param, bsg_time, extra_args)
 
-            # Aplication Swaps
-            if swaps == "--swaps":
-                best_solution = random_swaps(
-                    ssh,
-                    L,
-                    W,
-                    H,
-                    id2box,
-                    best_solution,
+            # Aplication Swaps sobre una solucion mejor que la propuesta
+            if swaps == "--swaps" and len(best_solution) != lb:
+                best_solution = mclp_instance.random_swaps(
+                    best_solution=best_solution,
                     max_iter=MAX_ITER,
                     extra_args=extra_args,
-                    max_no_improvements=max_no_improvements,
                     lb=lb,
+                    max_no_improvements=max_no_improvements,
+                    bsg_time=bsg_time
                 )
 
+            else:
+                if len(best_solution) == lb:
+                    print("The algorithm gots lower bound on the Generate candidate solution")
             tot_bins += len(best_solution)
 
             # Store the min solution of the run

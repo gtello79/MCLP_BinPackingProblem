@@ -13,7 +13,7 @@ r_param = 1.5
 n_runs = 5
 max_no_improvements = 50
 MIN_BOXES_TO_POP = 8
-swaps = "--"
+swaps = "--swaps"
 
 
 # Connection params
