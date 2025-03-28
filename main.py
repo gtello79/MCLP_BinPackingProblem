@@ -11,15 +11,12 @@ from base.INSTACE_PARAM import (
     max_no_improvements,
     swaps,
     n_runs,
-    host,
-    port,
-    username,
-    password,
     min_bin,
     VERBOSE,
     LOCAL_EXECUTION
 )
 
+from PassCredentials import username, password, host, port
 from statistics import mean
 from argparse import ArgumentParser
 import math
