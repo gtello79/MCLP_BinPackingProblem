@@ -9,13 +9,10 @@ import json
 
 
 class BSG():
-    def __init__(self, remove_instance=True):
-        self.remove_instance = remove_instance
-        if LOCAL_EXECUTION:
-            self.BSG_PATH = '.'
-        else:
-            self.BSG_PATH = "/home/iaraya/clp"
 
+    BSG_PATH = '.' if LOCAL_EXECUTION else '/home/iaraya/clp'
+    remove_instance = True
+    index_results = -2
 
     def bsg_solve(self,
                   boxes, bsg_time=1, args=""
@@ -32,7 +29,6 @@ class BSG():
 
         # Permite una ejecución local del BSG_CLP
         if LOCAL_EXECUTION:
-            index_results = -2
 
             command = [f'{self.BSG_PATH}/BSG_CLP', f'{self.BSG_PATH}/{filename}',
                        '-i', '0', '-t', f'{bsg_time}', '--json']
@@ -83,9 +79,6 @@ class BSG():
             json_data = json.loads(lines[index_results])
         except (JSONDecodeError, IndexError) as e:
             raise (e)
-            # Termina la ejecución del programa
-            sys.exit(1)
-
 
         for item in json_data["loaded"]:
             loaded[self.id2box[item[0]]] = item[1]

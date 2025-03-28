@@ -7,7 +7,7 @@ max_bl = 10000
 min_bin = 1000
 
 instances_name = "martello"
-MAX_ITER = 100000           # Valor de persistencia del Swap
+MAX_ITER = 100           # Valor de persistencia del Swap
 bsg_time = 5
 r_param = 1.5
 n_runs = 5
@@ -24,3 +24,9 @@ username = "iaraya"
 password = "lunyta22"
 
 LOCAL_EXECUTION = False
+
+# SWAP CONFIG
+MAX_VOL_ACCEPT = 0.65
+TOLERANCE = 0.3
+N_TO_SWAP = 2
+DIFF_ACCEPT = 1e-7

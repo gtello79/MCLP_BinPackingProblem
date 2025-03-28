@@ -1,6 +1,6 @@
 import random as rd
 from base.baseline.bin import bin
-from base.INSTACE_PARAM import MIN_BOXES_TO_POP
+from base.INSTACE_PARAM import MIN_BOXES_TO_POP, MAX_VOL_ACCEPT, TOLERANCE, N_TO_SWAP, DIFF_ACCEPT
 import copy as cp
 from base.Heuristics.BPP import BPP
 from base.Heuristics.BSG import BSG
@@ -115,24 +115,25 @@ class MCLP(BSG):
                      ):
 
         no_improvements = 0
+
         for i in range(max_iter):
             solution = cp.deepcopy(best_solution)
 
             # Realize the Swap Process over the current solution
             diff_var = BPP._swap(
-                solution=solution, n=2, max_vol_accept=0.65, tolerance=0.3)
+                solution=solution, n=N_TO_SWAP, max_vol_accept=MAX_VOL_ACCEPT, tolerance=TOLERANCE)
 
             # Evaluate de variation over 1e-7
-            if diff_var > 1e-7:
+            if diff_var > DIFF_ACCEPT:
 
                 # Verify the factibility in the solution
-                verified_solution = self.verify_solution(
+                verified_solution_flag = self.verify_solution(
                     solution=solution,
                     bsg_time=bsg_time,
                     args=extra_args,
                 )
 
-                if verified_solution:
+                if verified_solution_flag:
 
                     if self.verbose:
                         print("A new solution verificated")
@@ -148,6 +149,8 @@ class MCLP(BSG):
 
                 else:
                     no_improvements += 1
+            
+            print(f"Iter {i}: Current {len(best_solution)} -> New {len(solution)}")
 
             if no_improvements > max_no_improvements or len(best_solution) == lb:
                 break
