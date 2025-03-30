@@ -19,7 +19,7 @@ class BSG():
                   ):
 
         persistens = True
-        index_results = -1
+        
         
         filename = "tmp_instance_" + str(randint(10000, 99999))
         self.write_instance(self.L, self.W, self.H, boxes, filename)
@@ -29,7 +29,7 @@ class BSG():
 
         # Permite una ejecución local del BSG_CLP
         if LOCAL_EXECUTION:
-
+            index_results = -2
             command = [f'{self.BSG_PATH}/BSG_CLP', f'{self.BSG_PATH}/{filename}',
                        '-i', '0', '-t', f'{bsg_time}', '--json']
 
@@ -51,6 +51,8 @@ class BSG():
                     print(e)
                     persistens = True
         else:
+
+            index_results = -1
             # Permite una ejecución por vía SSH en un servidor remoto
             scp = SCPClient(self.ssh.get_transport())
             scp.put(filename, f"{self.BSG_PATH}/" + filename)
@@ -73,11 +75,11 @@ class BSG():
 
             # Elimina archivo creado en el servidor
             self.ssh.exec_command(f"rm {self.BSG_PATH}" + filename)
-
         # Se obtiene el resultado de la ejecución
         try:
             json_data = json.loads(lines[index_results])
         except (JSONDecodeError, IndexError) as e:
+            print(lines)
             raise (e)
 
         for item in json_data["loaded"]:

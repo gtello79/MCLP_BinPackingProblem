@@ -15,15 +15,7 @@ max_no_improvements = 50
 MIN_BOXES_TO_POP = 8
 swaps = "--swaps"
 
-
-# Connection params
-#host = "158.251.88.197"
-#host_2 = "158.251.93.9"
-#port = 22
-#username = "iaraya"
-#password = "lunyta22"
-
-LOCAL_EXECUTION = False
+LOCAL_EXECUTION = True
 
 # SWAP CONFIG
 MAX_VOL_ACCEPT = 0.65
